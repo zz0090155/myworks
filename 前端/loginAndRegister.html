@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        .head{
+            position: relative;
+            background-color: cadetblue;
+            width: 100%;
+            height: 70px;
+            line-height: 70px;
+        }
+        .head span{
+            position: absolute;
+            display: block;
+            font-size: x-large;
+            font-weight: 700px;
+            color: skyblue;
+            left: 45%;
+        }
+        .head a{
+            position: absolute;
+            color: skyblue;
+            display: inline-block;
+            text-decoration: none;
+            margin-left: 70px;
+        }
+        .head a:hover{
+            color: blue;
+        }
+        .box{
+            overflow: hidden;
+            width: 100%;
+            height: 900px;
+            background-color: rgba(0,0,0,0.2);
+        }
+        .box .inner{
+            width: 400px;
+            height: 500px;
+            background-color: aquamarine;
+            margin: 100px auto;
+            text-align: center;
+        }
+        .box .inner .top{
+            color: cadetblue;
+            font-size: x-large;
+            font-weight: 700px;
+            display: block;
+            width: 400px;
+            height: 70px;
+            line-height: 70px;
+        }
+        .box .inner .userName{
+            margin-top: 50px;
+            width: 400px;
+            height: 50px;
+            float: right;
+            text-align: center;
+        }
+        .box .inner .userName span{
+            font-size: x-large;
+            font-weight: 700px;
+            color: skyblue;
+        }
+        .box .inner .userName input{
+            width: 300px;
+            height: 40px;
+        }
+        .box .inner .password{
+            margin-top: 50px;
+            display: block;
+            width: 400px;
+            height: 50px;
+            float: right;
+            text-align: center;
+        }
+        .box .inner .password span{
+            font-size: x-large;
+            font-weight: 700px;
+            color: skyblue;
+        }
+        .box .inner .password input{
+            width: 300px;
+            height: 40px;
+        }
+        .box .inner .login{
+            width: 350px;
+            height: 50px;
+            margin-top: 30px;
+            background-color: cadetblue;
+            line-height: 50px;
+        }
+        .box .inner .register{
+            width: 350px;
+            height: 50px;
+            margin-top: 10px;
+            background-color: cadetblue;
+            line-height: 50px;
+        }
+        .box .inner .reset{
+            width: 350px;
+            height: 50px;
+            margin-top: 10px;
+            background-color: cadetblue;
+            line-height: 50px;
+        }
+        .box .inner .login span{
+            font-size: x-large;
+            font-weight: 700px;
+            color: skyblue;
+        }
+        .box .inner .register span{
+            font-size: x-large;
+            font-weight: 700px;
+            color: skyblue;
+        }
+        .box .inner .reset span{
+            font-size: x-large;
+            font-weight: 700px;
+            color: skyblue;
+        }
+    </style>
+</head>
+<body>
+    <div class="head">
+        <span>博客文章管理</span>
+        <a href="index.html" title="返回到首页">等会再登录</a>
+    </div>
+    <div class="box">
+        <div class="inner">
+            <span class="top">登录/注册</span>
+            <form>
+                <div class="userName">
+                <span>用户名:</span><input type="text" placeholder="请输入你的用户昵称">
+                </div>
+                <div class="password">
+                <span>密码:</span><input type="text" placeholder="请输入你的密码"> 
+                </div>
+                <button type="button" class="login"><span>登录</span></button>
+                <button type="button" class="register"><span>注册</span></button>
+                <button type="reset" class="reset"><span>重置</span></button>
+            </form>
+        </div>
+    </div>
+    <script>
+        let login=document.querySelector('.box .inner .login')
+        let register=document.querySelector('.box .inner .register')
+        let userName=document.querySelector('.box .inner .userName input')
+        let password=document.querySelector('.box .inner .password input')
+
+        async function getData(url,obj) {
+            let res=await fetch(url,{
+                method: 'post',
+                headers:{
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(obj)
+            })
+            return await res.json()
+        }
+
+        login.addEventListener('click',async function(){
+            let obj={}
+            obj.userName=userName.value
+            obj.password=password.value
+            let json=await getData('http://localhost:8080/api/user/login',obj)
+            if(json.code!=200){
+                let span=document.createElement('span')
+                span.innerHTML=json.message
+                span.style.color="red"
+                document.querySelector('.box .inner').appendChild(span)
+                setTimeout(function(){
+                    document.querySelector('.box .inner').removeChild(span)
+                },5000)
+            }else{
+                localStorage.setItem('Authorization',json.data)
+                localStorage.setItem('userName',obj.userName)
+                location.href='index.html'
+            }
+        })
+
+        register.addEventListener('click',async function(){
+            let obj={}
+            obj.userName=userName.value
+            obj.password=password.value
+            let json=await getData('http://localhost:8080/api/user/register',obj)
+            if(json.code!=200){
+                let span=document.createElement('span')
+                span.innerHTML=json.message
+                span.style.color="red"
+                document.querySelector('.box .inner').appendChild(span)
+                setTimeout(function(){
+                    document.querySelector('.box .inner').removeChild(span)
+                },5000)
+            }else{
+                let span=document.createElement('span')
+                span.innerHTML='注册成功，请完成登录'
+                span.style.color="blue"
+                document.querySelector('.box .inner').appendChild(span)
+                setTimeout(function(){
+                    document.querySelector('.box .inner').removeChild(span)
+                },5000)
+            }
+        })
+    </script>
+</body>
+</html>

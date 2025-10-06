@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        .head{
+            position: relative;
+            background-color: cadetblue;
+            width: 100%;
+            height: 70px;
+            line-height: 70px;
+        }
+        .head span{
+            position: absolute;
+            display: block;
+            font-size: x-large;
+            font-weight: 700px;
+            color: skyblue;
+            left: 45%;
+        }
+        .head .a1{
+            position: absolute;
+            color: skyblue;
+            display: inline-block;
+            text-decoration: none;
+            margin-left: 70px;
+        }
+        .head a:hover{
+            color: blue;
+        }
+        .head .a2{
+            position: absolute;
+            color: skyblue;
+            display: inline-block;
+            text-decoration: none;
+            right: 70px;
+        }
+        .box{
+            overflow: hidden;
+            width: 100%;
+            height: 900px;
+            background-color: rgba(0,0,0,0.2);
+        }
+        .box .top{
+            display: block;
+            float: right;
+            margin-top: 30px;
+            margin-right: 100px;
+            text-align: center;
+            width: 400px;
+            height: 50px;
+        }
+        .box .top input{
+            overflow: hidden;
+            display: block;
+            float: left;
+            width: 340px;
+            height: 43px;
+        }
+        .box .top input::placeholder{
+            display: block;
+            width: 340px;
+            height: 30px;
+            font-size: large;
+        }
+    </style>
+</head>
+<body>
+    <div class="head">
+        <span>博客文章管理</span>
+        <a href="index.html" title="返回到首页" class="a1">回到首页</a>
+        <a href="loginAndRegister.html" title="现在注册/登录" class="a2">登录/注册</a>
+    </div>
+    <div class="box">
+        <div class="top">
+            <input type="text" placeholder="我也想要发布评论">
+            <button type="button"><img src="../imgs/搜索.png" height="40px" width="40px"></button>
+        </div>
+    </div>
+    <script>
+        let LoginAndRegister=document.querySelector('.head .a2')
+        let box=document.querySelector('.box')
+        let mytop=document.querySelector('.box .top')
+        let searchInput=document.querySelector('.box .top input')
+        let search=document.querySelector('.box .top button')
+        let id=localStorage.getItem('id')
+        let userName
+        let Authorization
+
+        if(localStorage.getItem('Authorization')!==null){
+            Authorization=localStorage.getItem('Authorization')
+        }else{
+            Authorization=null
+        }
+
+        if(localStorage.getItem('userName')!==null){
+            userName=localStorage.getItem('userName')
+            LoginAndRegister.innerHTML=`你好! ${userName}`
+        }
+
+        async function getDataByPost(url,obj) {
+            let res=await fetch(url,{
+                method: 'post',
+                headers:{
+                    'Content-Type': 'application/json',
+                    'Authorization':Authorization
+                },
+                body: JSON.stringify(obj)
+            })
+            return await res.json()
+        }
+
+        async function getDataByDelete(url) {
+            let res=await fetch(url,{
+                method: 'delete',
+                headers:{
+                    'Content-Type': 'application/json',
+                    'Authorization':Authorization
+                },
+                body: null
+            })
+            return await res.json()
+        }
+
+        async function article(){
+            let res = await fetch(`http://localhost:8080/api/articles/${id}`)
+            json=await res.json()
+            json=json.data.article
+            let child=document.createElement('div')
+            let child1=document.createElement('div')
+            let child2=document.createElement('div')
+            let child3=document.createElement('div')
+            let child4=document.createElement('div')
+            let child5=document.createElement('button')
+                child.className='child'
+                child.style.width='100%'
+                child.style.borderBottom='1px solid black'
+                child.style.textAlign='center'
+                child1.innerHTML=`${json.title}`
+                child2.innerHTML=`作者:${json.author}`
+                child2.style.fontSize='small'
+                child3.innerHTML=`&nbsp ${json.content}`
+                child3.style.marginTop='5px'
+                child3.style.width='100%'
+                child3.style.textAlign='left'
+                child3.style.fontFamily='楷体'
+                child4.innerHTML=`发布时间:${json.updateTime||"未记录"}`
+                child5.innerHTML='删除文章'
+                child5.type="button"
+                child5.style.display='block'
+                child5.style.width='100px'
+                child5.style.height='30px'
+                child5.style.marginLeft='90%'
+                child5.style.backgroundColor='cadetblue'
+                child5.style.marginTop='5px'
+                child5.style.marginBottom='2px'
+                child5.style.border='0 solid black'
+                child.appendChild(child1)
+                child.appendChild(child2)
+                child.appendChild(child4)
+                child.appendChild(child3)
+                child.appendChild(child5)
+                box.insertBefore(child,mytop)
+                let button=document.querySelector('.box .child button')
+                button.addEventListener('click',async function() {
+            let json=await getDataByDelete(`http://localhost:8080/api/articles/${id}`)
+            if(json.code==200){
+                location.reload()
+            }else{
+                alert('请不要删除不属于你的文章')
+            }
+        })
+        }
+
+        async function comment() {
+            let res=await fetch(`http://localhost:8080/api/articles/${id}`)
+            json=await res.json()
+            json=json.data.comments
+            for(let i=0;i<json.length;i++){
+                let child=document.createElement('div')
+                let child1=document.createElement('div')
+                let child2=document.createElement('div')
+                let child3=document.createElement('button')
+                if(i==0){
+                    child.style.marginTop='120px'
+                }else{
+                    child.style.marginTop='30px'
+                }
+                child.style.borderBottom='1px solid black'
+                child1.innerHTML=`&nbsp ${json[i].userName}:&nbsp&nbsp&nbsp ${json[i].content}`
+                child1.style.fontFamily='楷体'
+                child2.innerHTML=`发布时间:${json[i].updateTime||"未记录"}&nbsp &nbsp`
+                child2.style.textAlign='right'
+                child2.style.marginTop='5px'
+                child3.innerHTML='删除评论'
+                child3.type="button"
+                child3.style.display='block'
+                child3.style.width='100px'
+                child3.style.height='30px'
+                child3.style.marginLeft='90%'
+                child3.style.backgroundColor='cadetblue'
+                child3.style.marginTop='5px'
+                child3.style.marginBottom='2px'
+                child3.style.border='0 solid black'
+                child.appendChild(child1)
+                child.appendChild(child2)
+                child.appendChild(child3)
+                box.appendChild(child)
+                child3.addEventListener('click',async function() {
+                    let result=await getDataByDelete(`http://localhost:8080/api/comments/${json[i].id}`)
+                    if(result.code==200){
+                        location.reload()
+                    }else{
+                        alert('请不要删除不属于你的评论')
+                    }
+                })
+            }
+        }
+        article()
+        comment()
+
+        search.addEventListener('click',async function() {
+            let obj={}
+            obj.article={"id":id}
+            obj.content=searchInput.value
+            obj.userName=userName
+            let json=await getDataByPost('http://localhost:8080/api/comments',obj)
+            if(json.code==200){
+                location.reload()
+            }
+        })
+    </script>
+</body>
+</html>
